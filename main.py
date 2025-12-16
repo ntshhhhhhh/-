@@ -17,6 +17,7 @@ CATEGORIES =[
 connect = sqlite3.connect("recomm.db", check_same_thread=False)
 cursor = connect.cursor()
 
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS user_recomm(
     user_id INTEGER,
@@ -31,7 +32,7 @@ def update_recomm(user_id, category, value):
     VALUES (?, ?, ?)
     ON CONFLICT(user_id, category)
     DO UPDATE SET score = score + ? """,(user_id, category, value, value))
-connect.commit()
+    connect.commit()
 
 def get_user_recomm(user_id):
     cursor.execute("""
@@ -230,23 +231,10 @@ def callback(call):
         data = requests.get(url, params=params).json()
         articles = data.get("articles", [])
         if not articles:
-            params["lang"] = "en"
-            data = requests.get(url, params=params).json()
-            articles = data.get("articles", [])
-            if not articles:
-                params["lang"] = "en"
-                data = requests.get(url, params=params).json()
-                articles = data.get("articles", [])
-                if not articles:
-                    bot.send_message(call.message.chat.id, "Новостей не найдено")
-                    bot.send_message(call.message.chat.id, "Нажмите /start чтобы вернуться в меню")
+            bot.send_message(call.message.chat.id, "Новостей не найдено")
+            bot.send_message(call.message.chat.id, "Нажмите /start чтобы вернуться в меню")
             return
         article = random.choice(articles)
-        markup = types.InlineKeyboardMarkup()
-        markup.add(
-            types.InlineKeyboardButton("👍", callback_data=f"like_region_{country}"),
-            types.InlineKeyboardButton("👎", callback_data=f"dislike_region_{country}")
-        )
-        bot.send_message(call.message.chat.id, f"{article['title']}\n{article['url']}", reply_markup=markup)
+        bot.send_message(call.message.chat.id, f"{article['title']}\n{article['url']}")
         bot.send_message(call.message.chat.id, "Нажмите /start чтобы вернуться в меню")
 bot.infinity_polling()
